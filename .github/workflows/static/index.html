@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student CRUD Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-title h1 {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #334155;
+    }
+    .btn-secondary:hover {
+      background-color: #cbd5e1;
+    }
+
+    .btn-danger {
+      background-color: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 6px;
+    }
+
+    /* Controls Bar */
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: #f1f5f9;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 9999px;
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .gpa-high { color: #059669; font-weight: 600; }
+    .gpa-med { color: #d97706; font-weight: 600; }
+    .gpa-low { color: #dc2626; font-weight: 600; }
+
+    /* Modals */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(2px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 460px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none;
+      font-size: 14px;
+      z-index: 2000;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-title">
+        <h1>Student CRUD API</h1>
+        <p>RESTful Management System built with FastAPI & SQLite</p>
+      </div>
+      <div class="header-actions">
+        <a href="/docs" target="_blank" class="btn btn-secondary">
+          Swagger Docs
+        </a>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          + Add Student
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Total Enrolled</span>
+        <span class="stat-value" id="stat-total">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Average GPA</span>
+        <span class="stat-value" id="stat-gpa">0.00</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Active Courses</span>
+        <span class="stat-value" id="stat-courses">0</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Search by name, email, or course..."
+        oninput="debounceSearch()"
+      />
+      <button class="btn btn-secondary" onclick="loadStudents()">Refresh</button>
+    </div>
+
+    <!-- Student Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Age</th>
+            <th>Course</th>
+            <th>GPA</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="studentTableBody">
+          <tr>
+            <td colspan="7" class="empty-state">Loading students...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal for Create / Edit -->
+  <div class="modal-backdrop" id="studentModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Add Student</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="studentForm" onsubmit="handleFormSubmit(event)">
+        <input type="hidden" id="studentId" />
+
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" class="form-control" placeholder="e.g. Emily Clark" required />
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" class="form-control" placeholder="e.g. emily.clark@university.edu" required />
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <div class="form-group" style="flex: 1;">
+            <label for="age">Age *</label>
+            <input type="number" id="age" class="form-control" min="1" max="120" placeholder="21" required />
+          </div>
+
+          <div class="form-group" style="flex: 1;">
+            <label for="gpa">GPA (0.0 - 4.0) *</label>
+            <input type="number" step="0.01" min="0" max="4.0" id="gpa" class="form-control" placeholder="3.80" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="course">Course / Major *</label>
+          <input type="text" id="course" class="form-control" placeholder="e.g. Computer Science" required />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    const API_BASE = '/api';
+    let searchTimeout = null;
+
+    // Toast helper
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.style.backgroundColor = isError ? '#ef4444' : '#1e293b';
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3500);
+    }
+
+    // Debounce search
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        loadStudents();
+      }, 300);
+    }
+
+    // Fetch Stats
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_BASE}/stats`);
+        if (res.ok) {
+          const stats = await res.json();
+          document.getElementById('stat-total').innerText = stats.total_students;
+          document.getElementById('stat-gpa').innerText = stats.average_gpa.toFixed(2);
+        }
+      } catch (err) {
+        console.error('Failed to load stats', err);
+      }
+    }
+
+    // Load Students list
+    async function loadStudents() {
+      const query = document.getElementById('searchInput').value.trim();
+      const url = query ? `${API_BASE}/students?search=${encodeURIComponent(query)}` : `${API_BASE}/students`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch students');
+        const students = await res.json();
+
+        // Update active courses count
+        const courses = new Set(students.map(s => s.course));
+        document.getElementById('stat-courses').innerText = courses.size;
+
+        const tbody = document.getElementById('studentTableBody');
+        if (students.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="empty-state">
+                No students found. Click <strong>+ Add Student</strong> to create your first record!
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = students.map(s => {
+          let gpaClass = 'gpa-med';
+          if (s.gpa >= 3.5) gpaClass = 'gpa-high';
+          else if (s.gpa < 2.5) gpaClass = 'gpa-low';
+
+          return `
+            <tr>
+              <td><strong>#${s.id}</strong></td>
+              <td>${escapeHtml(s.name)}</td>
+              <td>${escapeHtml(s.email)}</td>
+              <td>${s.age}</td>
+              <td><span class="badge">${escapeHtml(s.course)}</span></td>
+              <td class="${gpaClass}">${s.gpa.toFixed(2)}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal(${s.id})">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStudent(${s.id}, '${escapeHtml(s.name)}')">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        loadStats();
+      } catch (err) {
+        showToast('Error loading students: ' + err.message, true);
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"']/g, function(m) {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#039;'
+        }[m];
+      });
+    }
+
+    // Modal controls
+    function openCreateModal() {
+      document.getElementById('modalTitle').innerText = 'Add Student';
+      document.getElementById('studentId').value = '';
+      document.getElementById('studentForm').reset();
+      document.getElementById('studentModal').classList.add('active');
+    }
+
+    async function openEditModal(id) {
+      try {
+        const res = await fetch(`${API_BASE}/students/${id}`);
+        if (!res.ok) throw new Error('Student not found');
+        const student = await res.json();
+
+        document.getElementById('modalTitle').innerText = 'Edit Student #' + id;
+        document.getElementById('studentId').value = student.id;
+        document.getElementById('name').value = student.name;
+        document.getElementById('email').value = student.email;
+        document.getElementById('age').value = student.age;
+        document.getElementById('course').value = student.course;
+        document.getElementById('gpa').value = student.gpa;
+
+        document.getElementById('studentModal').classList.add('active');
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('studentModal').classList.remove('active');
+    }
+
+    // Form submit (Create or Update)
+    async function handleFormSubmit(event) {
+      event.preventDefault();
+      const id = document.getElementById('studentId').value;
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        age: parseInt(document.getElementById('age').value, 10),
+        course: document.getElementById('course').value.trim(),
+        gpa: parseFloat(document.getElementById('gpa').value),
+      };
+
+      const isEdit = Boolean(id);
+      const url = isEdit ? `${API_BASE}/students/${id}` : `${API_BASE}/students`;
+      const method = isEdit ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          const errMsg = data.detail || 'Operation failed';
+          throw new Error(errMsg);
+        }
+
+        showToast(isEdit ? 'Student updated successfully!' : 'Student added successfully!');
+        closeModal();
+        loadStudents();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // Delete Student
+    async function deleteStudent(id, name) {
+      if (!confirm(`Are you sure you want to delete student "${name}" (ID #${id})?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/students/${id}`, { method: 'DELETE' });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.detail || 'Delete failed');
+        }
+        showToast(`Student #${id} deleted.`);
+        loadStudents();
+      } catch (err) {
+        showToast(err.message, true);
+      }
+    }
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStudents();
+    });
+  </script>
+</body>
+</html>
